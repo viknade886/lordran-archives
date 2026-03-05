@@ -1,4 +1,4 @@
-const API = 'http://localhost:5000/api';
+const API = 'https://lordran-archives.onrender.com/api';
 
 function initParticles() {
   const container = document.getElementById('particles');
