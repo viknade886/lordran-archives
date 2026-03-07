@@ -56,7 +56,7 @@ function renderItems(items) {
   container.innerHTML = items.map(item => `
     <div class="item-card">
       ${item.image
-        ? `<img src="http://localhost:5000/uploads/${item.image}" class="item-image" alt="${item.name}">`
+        ? `<img src="${item.image}" class="item-image" alt="${item.name}">`
         : `<div class="item-image-placeholder">${getCatIcon(item.category)}</div>`
       }
       <div class="item-body">
