@@ -8,9 +8,7 @@
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-
   <div class="ember-particles" id="particles"></div>
-
   <header class="site-header">
     <div class="header-inner">
       <div class="logo-area">
@@ -28,24 +26,20 @@
       </nav>
     </div>
   </header>
-
   <div class="auth-page">
     <div class="auth-card wide-card">
       <h2 class="auth-title">Submit to the Archives</h2>
       <p class="auth-subtitle">Share your knowledge of Lordran</p>
-
       <div id="errorMsg" class="error-msg" style="display:none"></div>
       <div id="successMsg" class="success-msg" style="display:none"></div>
       <div id="loginRequired" class="error-msg" style="display:none">
         You must <a href="login.html">login</a> to submit items.
       </div>
-
       <div id="submitForm">
         <div class="form-group">
           <label class="form-label">Item Name</label>
           <input type="text" id="itemName" class="form-input" placeholder="e.g. Estus Flask">
         </div>
-
         <div class="form-group">
           <label class="form-label">Category</label>
           <select id="itemCategory" class="form-input">
@@ -57,100 +51,96 @@
             <option value="consumable">Consumable</option>
           </select>
         </div>
-
         <div class="form-group">
           <label class="form-label">Description</label>
           <textarea id="itemDesc" class="form-input form-textarea" placeholder="Describe the item, its lore, stats, or acquisition..."></textarea>
         </div>
-
         <div class="form-group">
-          <label class="form-label">Image (optional)</label>
-          <input type="file" id="itemImage" class="form-input" accept="image/*" onchange="previewImage(event)">
+          <label class="form-label">Image URL (optional)</label>
+          <input type="text" id="itemImage" class="form-input" placeholder="https://i.imgur.com/example.png" oninput="previewImage()">
+          <div id="imageError" class="error-msg" style="display:none; margin-top:8px;">Only jpg, png, jpeg, and webp image links are allowed.</div>
           <img id="imagePreview" style="display:none; margin-top:12px; max-width:200px; border: 1px solid var(--gold); border-radius:4px;">
         </div>
-
         <button class="btn-primary" onclick="submitItem()">Submit to Archives</button>
       </div>
     </div>
   </div>
-
   <script src="js/api.js"></script>
   <script>
-    // Check login
     const token = localStorage.getItem('token');
     if (!token) {
       document.getElementById('submitForm').style.display = 'none';
       document.getElementById('loginRequired').style.display = 'block';
     }
-
-    // Nav auth
     if (token) {
       document.getElementById('logoutLink').style.display = 'inline';
       document.getElementById('loginLink').style.display = 'none';
     }
-
     function logout() {
       localStorage.clear();
       window.location.href = 'index.html';
     }
-
-    function previewImage(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = e => {
-        const preview = document.getElementById('imagePreview');
-        preview.src = e.target.result;
-        preview.style.display = 'block';
-      };
-      reader.readAsDataURL(file);
+    function isValidImageUrl(url) {
+      return /\.(jpg|jpeg|png|webp)(\?.*)?$/i.test(url);
     }
-
+    function previewImage() {
+      const url = document.getElementById('itemImage').value.trim();
+      const preview = document.getElementById('imagePreview');
+      const imageError = document.getElementById('imageError');
+      if (!url) {
+        preview.style.display = 'none';
+        imageError.style.display = 'none';
+        return;
+      }
+      if (!isValidImageUrl(url)) {
+        preview.style.display = 'none';
+        imageError.style.display = 'block';
+        return;
+      }
+      imageError.style.display = 'none';
+      preview.src = url;
+      preview.style.display = 'block';
+    }
     async function submitItem() {
       const name = document.getElementById('itemName').value;
       const category = document.getElementById('itemCategory').value;
       const description = document.getElementById('itemDesc').value;
-      const imageFile = document.getElementById('itemImage').files[0];
+      const imageUrl = document.getElementById('itemImage').value.trim();
       const errorMsg = document.getElementById('errorMsg');
       const successMsg = document.getElementById('successMsg');
-
       errorMsg.style.display = 'none';
       successMsg.style.display = 'none';
-
       if (!name || !description) {
         errorMsg.textContent = 'Name and description are required.';
         errorMsg.style.display = 'block';
         return;
       }
-
-      const formData = new FormData();
-      formData.append('name', name);
-      formData.append('category', category);
-      formData.append('description', description);
-      if (imageFile) formData.append('image', imageFile);
-
+      if (imageUrl && !isValidImageUrl(imageUrl)) {
+        errorMsg.textContent = 'Only jpg, png, jpeg, and webp image links are allowed.';
+        errorMsg.style.display = 'block';
+        return;
+      }
       try {
         const res = await fetch(`${API}/items`, {
           method: 'POST',
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-          body: formData
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ name, category, description, image: imageUrl || null })
         });
-
         const data = await res.json();
-
         if (!res.ok) {
           errorMsg.textContent = data.message || 'Submission failed.';
           errorMsg.style.display = 'block';
           return;
         }
-
         successMsg.textContent = 'Submitted! Your entry awaits review by an Operator.';
         successMsg.style.display = 'block';
         document.getElementById('itemName').value = '';
         document.getElementById('itemDesc').value = '';
         document.getElementById('itemImage').value = '';
         document.getElementById('imagePreview').style.display = 'none';
-
       } catch (err) {
         errorMsg.textContent = 'Could not reach the server.';
         errorMsg.style.display = 'block';
@@ -158,4 +148,4 @@
     }
   </script>
 </body>
-</html>
+</html> 
