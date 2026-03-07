@@ -81,7 +81,7 @@
       window.location.href = 'index.html';
     }
     function isValidImageUrl(url) {
-      return /\.(jpg|jpeg|png|webp)(\?.*)?$/i.test(url);
+      return /\.(jpg|jpeg|png|webp)/i.test(url);
     }
     function previewImage() {
       const url = document.getElementById('itemImage').value.trim();
