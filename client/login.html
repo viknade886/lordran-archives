@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — Lordran Archives</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <div class="ember-particles" id="particles"></div>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo-area">
+        <div class="bonfire-icon">🔥</div>
+        <div>
+          <h1 class="site-title"><a href="index.html" style="color:inherit;text-decoration:none">Lordran Archives</a></h1>
+          <p class="site-subtitle">A compendium of all things Dark Souls</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="auth-page">
+    <div class="auth-card">
+      <h2 class="auth-title">Link the Fire</h2>
+      <p class="auth-subtitle">Sign in to the Archives</p>
+
+      <div id="errorMsg" class="error-msg" style="display:none"></div>
+
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input type="text" id="username" class="form-input" placeholder="Enter your name, Ashen One">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" id="password" class="form-input" placeholder="••••••••">
+      </div>
+      <button class="btn-primary" onclick="doLogin()">Enter the Archives</button>
+
+      <p class="auth-link">No account? <a href="register.html">Register here</a></p>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    async function doLogin() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const errorMsg = document.getElementById('errorMsg');
+
+      if (!username || !password) {
+        errorMsg.textContent = 'Please fill in all fields.';
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          errorMsg.textContent = data.message || 'Login failed.';
+          errorMsg.style.display = 'block';
+          return;
+        }
+
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('role', data.role);
+        localStorage.setItem('username', username);
+        window.location.href = 'index.html';
+
+      } catch (err) {
+        errorMsg.textContent = 'Could not reach the server.';
+        errorMsg.style.display = 'block';
+      }
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') doLogin();
+    });
+  </script>
+</body>
+</html>
