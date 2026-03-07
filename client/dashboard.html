@@ -119,7 +119,7 @@
 
       container.innerHTML = items.map(item => `
         <div class="item-card" id="card-${item.id}">
-          ${item.image ? `<img src="http://localhost:5000/uploads/${item.image}" class="item-image">` : ''}
+          ${item.image ? `<img src="${item.image}" class="item-image">` : ''}
           <div class="item-body">
             <span class="item-category">${item.category.replace('_', ' ')}</span>
             <h3 class="item-name">${item.name}</h3>
