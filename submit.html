@@ -64,8 +64,11 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">Image (optional)</label>
-          <input type="file" id="itemImage" class="form-input" accept="image/*" onchange="previewImage(event)">
+          <label class="form-label">Image URL (optional)</label>
+          <input type="text" id="itemImage" class="form-input" placeholder="https://i.imgur.com/example.png" oninput="previewImage()">
+          <div id="imageError" class="error-msg" style="display:none; margin-top:8px;">
+            Only jpg, png, jpeg, and webp image links are allowed.
+          </div>
           <img id="imagePreview" style="display:none; margin-top:12px; max-width:200px; border: 1px solid var(--gold); border-radius:4px;">
         </div>
 
@@ -76,14 +79,12 @@
 
   <script src="js/api.js"></script>
   <script>
-    // Check login
     const token = localStorage.getItem('token');
     if (!token) {
       document.getElementById('submitForm').style.display = 'none';
       document.getElementById('loginRequired').style.display = 'block';
     }
 
-    // Nav auth
     if (token) {
       document.getElementById('logoutLink').style.display = 'inline';
       document.getElementById('loginLink').style.display = 'none';
@@ -94,23 +95,37 @@
       window.location.href = 'index.html';
     }
 
-    function previewImage(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = e => {
-        const preview = document.getElementById('imagePreview');
-        preview.src = e.target.result;
-        preview.style.display = 'block';
-      };
-      reader.readAsDataURL(file);
+    function isValidImageUrl(url) {
+      return /\.(jpg|jpeg|png|webp)(\?.*)?$/i.test(url);
+    }
+
+    function previewImage() {
+      const url = document.getElementById('itemImage').value.trim();
+      const preview = document.getElementById('imagePreview');
+      const imageError = document.getElementById('imageError');
+
+      if (!url) {
+        preview.style.display = 'none';
+        imageError.style.display = 'none';
+        return;
+      }
+
+      if (!isValidImageUrl(url)) {
+        preview.style.display = 'none';
+        imageError.style.display = 'block';
+        return;
+      }
+
+      imageError.style.display = 'none';
+      preview.src = url;
+      preview.style.display = 'block';
     }
 
     async function submitItem() {
       const name = document.getElementById('itemName').value;
       const category = document.getElementById('itemCategory').value;
       const description = document.getElementById('itemDesc').value;
-      const imageFile = document.getElementById('itemImage').files[0];
+      const imageUrl = document.getElementById('itemImage').value.trim();
       const errorMsg = document.getElementById('errorMsg');
       const successMsg = document.getElementById('successMsg');
 
@@ -123,17 +138,20 @@
         return;
       }
 
-      const formData = new FormData();
-      formData.append('name', name);
-      formData.append('category', category);
-      formData.append('description', description);
-      if (imageFile) formData.append('image', imageFile);
+      if (imageUrl && !isValidImageUrl(imageUrl)) {
+        errorMsg.textContent = 'Only jpg, png, jpeg, and webp image links are allowed.';
+        errorMsg.style.display = 'block';
+        return;
+      }
 
       try {
         const res = await fetch(`${API}/items`, {
           method: 'POST',
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-          body: formData
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ name, category, description, image: imageUrl || null })
         });
 
         const data = await res.json();

@@ -1,21 +1,13 @@
 const router = require("express").Router();
-const multer = require("multer");
 const auth = require("../middleware/auth");
 const role = require("../middleware/role");
 const db = require("../../database");
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "uploads/"),
-  filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname)
-});
-
-const upload = multer({ storage });
-
 // Create Submission
-router.post("/", auth, upload.single("image"), (req, res) => {
+router.post("/", auth, (req, res) => {
   db.run(
     `INSERT INTO items (name, category, description, image, submittedBy) VALUES (?, ?, ?, ?, ?)`,
-    [req.body.name, req.body.category, req.body.description, req.file ? req.file.filename : null, req.user.id],
+    [req.body.name, req.body.category, req.body.description, req.body.image || null, req.user.id],
     function (err) {
       if (err) return res.status(400).json({ message: err.message });
       res.json({ id: this.lastID });
