@@ -1,4 +1,4 @@
-const API = 'https://lordran-archives.onrender.com/api';
+const API = 'https://lordran-archives-csharp-production.up.railway.app/api';
 
 function initParticles() {
   const container = document.getElementById('particles');
