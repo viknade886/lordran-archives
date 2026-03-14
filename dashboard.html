@@ -126,7 +126,6 @@
             <p class="item-desc">${item.description}</p>
             <div class="dash-actions">
               ${isPending ? `<button class="btn-approve" onclick="approveItem(${item.id})">Approve</button>` : ''}
-              ${role === 'admin' ? `<button class="btn-redact" onclick="redactItem(${item.id})">Redact</button>` : ''}
               <button class="btn-delete" onclick="deleteItem(${item.id})">Delete</button>
             </div>
           </div>
@@ -136,14 +135,6 @@
 
     async function approveItem(id) {
       await fetch(`${API}/items/approve/${id}`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      document.getElementById(`card-${id}`).remove();
-    }
-
-    async function redactItem(id) {
-      await fetch(`${API}/items/redact/${id}`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` }
       });

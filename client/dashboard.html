@@ -126,7 +126,6 @@
             <p class="item-desc">${item.description}</p>
             <div class="dash-actions">
               ${isPending ? `<button class="btn-approve" onclick="approveItem(${item.id})">Approve</button>` : ''}
-              ${role === 'admin' ? `<button class="btn-redact" onclick="redactItem(${item.id})">Redact</button>` : ''}
               <button class="btn-delete" onclick="deleteItem(${item.id})">Delete</button>
             </div>
           </div>
@@ -142,14 +141,14 @@
       document.getElementById(`card-${id}`).remove();
     }
 
-    async function redactItem(id) {
-      await fetch(`${API}/items/redact/${id}`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      document.getElementById(`card-${id}`).remove();
-    }
-
+async function redactItem(id) {
+  if (!confirm('Are you sure you want to redact this entry?')) return;
+  await fetch(`${API}/items/${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  document.getElementById(`card-${id}`).remove();
+}
     async function deleteItem(id) {
       if (!confirm('Are you sure you want to delete this entry?')) return;
       await fetch(`${API}/items/${id}`, {
